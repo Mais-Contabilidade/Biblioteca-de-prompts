@@ -1,0 +1,1 @@
+export const Footer = () => `<footer><div class="container footer__inner"><div><strong>Mais Contabilidade &amp; Soluções Empresariais</strong><span>Biblioteca de Prompts · Uso interno</span></div><p>A IA apoia. A análise profissional valida.</p></div></footer>`;

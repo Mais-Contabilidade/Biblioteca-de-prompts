@@ -1,0 +1,1 @@
+export const SearchBar = () => `<div class="search-wrap"><label for="search">Encontre uma atividade</label><div class="search"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.4-4.4m2.4-5.1a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/></svg><input id="search" type="search" autocomplete="off" placeholder="Buscar prompt, atividade ou palavra-chave..." /></div></div>`;
