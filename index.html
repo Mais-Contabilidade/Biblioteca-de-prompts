@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Biblioteca interna de prompts e skills da Mais Contabilidade & Soluções Empresariais.">
+  <meta name="theme-color" content="#090a0d">
+  <title>Biblioteca de Prompts | Mais Contabilidade</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23090a0d'/%3E%3Cpath d='M15 44V20h8l9 13 9-13h8v24h-8V32L32 45 23 32v12z' fill='%23d8aa49'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #090a0d;
+      --surface: #111318;
+      --surface-2: #171a20;
+      --surface-3: #1e222a;
+      --text: #f7f5ef;
+      --muted: #a4a7ae;
+      --faint: #70747e;
+      --line: rgba(255,255,255,.10);
+      --line-strong: rgba(216,170,73,.34);
+      --gold: #d8aa49;
+      --gold-2: #f0cf7a;
+      --gold-soft: rgba(216,170,73,.11);
+      --success: #75c89a;
+      --sidebar: 244px;
+      --radius: 18px;
+      --shadow: 0 18px 44px rgba(0,0,0,.24);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; color-scheme: dark; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: radial-gradient(circle at 78% 0%, rgba(216,170,73,.08), transparent 27rem), var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 3px solid rgba(240,207,122,.82); outline-offset: 3px; }
+    .skip-link {
+      position: fixed; z-index: 9999; top: 12px; left: 12px; transform: translateY(-160%);
+      border-radius: 10px; background: var(--gold-2); color: #111; padding: 10px 14px;
+      font-weight: 800; transition: transform .2s ease;
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .app-shell { min-height: 100vh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 40; display: flex; width: var(--sidebar);
+      flex-direction: column; border-right: 1px solid var(--line); background: rgba(8,9,12,.94);
+      backdrop-filter: blur(18px);
+    }
+    .brand {
+      display: flex; min-height: 112px; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--line); padding: 22px;
+    }
+    .brand-logo-wrap {
+      display: grid; width: 52px; height: 52px; flex: 0 0 52px; place-items: center;
+      overflow: hidden; border-radius: 15px; background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+    }
+    .brand-logo { display: block; width: 43px; height: 43px; object-fit: contain; }
+    .brand-copy { min-width: 0; }
+    .brand-name { display: block; font-size: 1.05rem; font-weight: 850; letter-spacing: .01em; }
+    .brand-subtitle {
+      display: block; color: var(--gold-2); font-size: .76rem; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .nav { display: grid; gap: 6px; padding: 22px 14px; }
+    .nav-label {
+      margin: 0 10px 8px; color: var(--faint); font-size: .75rem; font-weight: 800;
+      letter-spacing: .12em; text-transform: uppercase;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; min-height: 46px; border: 1px solid transparent;
+      border-radius: 12px; padding: 0 13px; color: var(--muted); font-size: .92rem;
+      font-weight: 700; transition: .2s ease;
+    }
+    .nav-item svg { width: 19px; height: 19px; flex: 0 0 19px; }
+    .nav-item:hover { border-color: var(--line); background: var(--surface); color: var(--text); }
+    .nav-item.active {
+      border-color: var(--line-strong);
+      background: linear-gradient(135deg, rgba(216,170,73,.16), rgba(216,170,73,.06));
+      color: var(--gold-2);
+    }
+    .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--line); padding: 18px 16px; }
+    .user-card {
+      display: flex; align-items: center; gap: 11px; border: 1px solid var(--line);
+      border-radius: 14px; background: var(--surface); padding: 11px;
+    }
+    .avatar {
+      display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center;
+      border-radius: 50%; background: var(--gold); color: #14110a; font-size: .74rem; font-weight: 900;
+    }
+    .user-meta { min-width: 0; }
+    .user-name {
+      display: block; overflow: hidden; font-size: .86rem; font-weight: 800;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-role { display: block; color: var(--muted); font-size: .75rem; }
+    .mobile-bar { display: none; }
+    .main { min-height: 100vh; margin-left: var(--sidebar); }
+    .content { width: min(1420px, calc(100% - 72px)); margin: 0 auto; padding: 54px 0 68px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; min-height: 32px; margin-bottom: 18px;
+      border: 1px solid var(--line-strong); border-radius: 999px; background: var(--gold-soft);
+      padding: 5px 12px; color: var(--gold-2); font-size: .78rem; font-weight: 850;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .eyebrow svg { width: 16px; height: 16px; }
+    .hero {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end;
+      gap: 28px; margin-bottom: 28px;
+    }
+    h1 {
+      max-width: 850px; margin: 0; font-size: clamp(2.2rem, 4vw, 4.5rem);
+      font-weight: 850; letter-spacing: -.055em; line-height: .98;
+    }
+    h1 span { color: var(--gold); }
+    .hero p {
+      max-width: 760px; margin: 18px 0 0; color: var(--muted);
+      font-size: clamp(1rem, 1.3vw, 1.13rem);
+    }
+    .summary { display: grid; min-width: 215px; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .summary-item { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 14px 16px; }
+    .summary-value { display: block; color: var(--gold-2); font-size: 1.35rem; font-weight: 850; line-height: 1; }
+    .summary-label { display: block; margin-top: 6px; color: var(--muted); font-size: .74rem; }
+    details.guide {
+      margin: 0 0 22px; overflow: hidden; border: 1px solid var(--line);
+      border-radius: 16px; background: rgba(17,19,24,.88);
+    }
+    details.guide[open] { border-color: var(--line-strong); }
+    details.guide summary {
+      display: flex; min-height: 58px; cursor: pointer; list-style: none;
+      align-items: center; gap: 12px; padding: 0 18px; font-weight: 800;
+    }
+    details.guide summary::-webkit-details-marker { display: none; }
+    details.guide summary svg { width: 20px; height: 20px; color: var(--gold); }
+    .chevron { margin-left: auto; transition: transform .2s ease; }
+    details[open] .chevron { transform: rotate(180deg); }
+    .guide-content {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      border-top: 1px solid var(--line); padding: 16px 18px 18px;
+    }
+    .guide-step { border-radius: 13px; background: var(--surface-2); padding: 15px; }
+    .guide-step strong { display: block; margin-bottom: 5px; color: var(--gold-2); }
+    .guide-step p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .toolbar {
+      position: sticky; z-index: 20; top: 0; margin: 0 -10px 24px;
+      border-radius: 18px; background: rgba(9,10,13,.82); padding: 10px;
+      backdrop-filter: blur(18px);
+    }
+    .search-wrap { position: relative; margin-bottom: 12px; }
+    .search-wrap svg {
+      position: absolute; top: 50%; left: 17px; width: 20px; height: 20px;
+      color: var(--faint); transform: translateY(-50%); pointer-events: none;
+    }
+    #search {
+      width: 100%; min-height: 52px; border: 1px solid var(--line); border-radius: 14px;
+      background: var(--surface); color: var(--text); padding: 0 48px; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    #search::placeholder { color: var(--faint); }
+    #search:focus { border-color: rgba(216,170,73,.68); box-shadow: 0 0 0 4px rgba(216,170,73,.10); }
+    .clear-search {
+      position: absolute; top: 50%; right: 10px; display: none; width: 34px; height: 34px;
+      cursor: pointer; place-items: center; border: 0; border-radius: 9px;
+      background: transparent; color: var(--muted); transform: translateY(-50%);
+    }
+    .clear-search:hover { background: var(--surface-3); color: var(--text); }
+    .filter-row { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+    .filter {
+      display: inline-flex; min-height: 40px; flex: 0 0 auto; cursor: pointer; align-items: center;
+      gap: 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+      padding: 0 15px; color: var(--muted); font-size: .88rem; font-weight: 750; transition: .2s ease;
+    }
+    .filter:hover { border-color: var(--line-strong); color: var(--text); }
+    .filter.active { border-color: rgba(216,170,73,.7); background: var(--gold-soft); color: var(--gold-2); }
+    .count {
+      display: grid; min-width: 22px; height: 22px; place-items: center; border-radius: 999px;
+      background: rgba(255,255,255,.07); color: inherit; font-size: .72rem; font-weight: 850;
+    }
+    .results-line {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      margin-bottom: 15px; color: var(--muted); font-size: .86rem;
+    }
+    .results-line strong { color: var(--text); }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .prompt-card {
+      display: flex; min-width: 0; min-height: 420px; flex-direction: column; overflow: hidden;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: linear-gradient(160deg, rgba(24,27,33,.98), rgba(14,16,20,.98));
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+    .prompt-card:hover { border-color: var(--line-strong); box-shadow: var(--shadow); transform: translateY(-3px); }
+    .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 18px 0; }
+    .code-badge {
+      display: inline-flex; min-height: 28px; align-items: center; border: 1px solid rgba(216,170,73,.35);
+      border-radius: 999px; background: var(--gold-soft); padding: 3px 10px;
+      color: var(--gold-2); font-size: .75rem; font-weight: 900;
+    }
+    .area-label { color: var(--faint); font-size: .73rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .card-title { margin: 13px 18px 12px; font-size: 1.05rem; letter-spacing: -.015em; line-height: 1.3; }
+    .prompt-box {
+      margin: 0 18px; border: 1px solid var(--line); border-radius: 13px; background: #090a0d;
+      padding: 15px; color: #e9e6de; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: .82rem; line-height: 1.65; white-space: pre-wrap;
+    }
+    mark { border-radius: 3px; background: rgba(216,170,73,.24); color: var(--gold-2); padding: 0 2px; }
+    .tip { display: flex; gap: 9px; margin: 14px 18px 16px; color: var(--muted); font-size: .81rem; line-height: 1.45; }
+    .tip svg { width: 17px; height: 17px; flex: 0 0 17px; margin-top: 1px; color: var(--gold); }
+    .tip strong { color: #d9d7d1; }
+    .copy-btn {
+      display: flex; min-height: 46px; cursor: pointer; align-items: center; justify-content: center;
+      gap: 9px; margin: auto 18px 18px; border: 1px solid rgba(216,170,73,.50);
+      border-radius: 12px; background: linear-gradient(135deg, #c59637, #e2b955);
+      color: #171208; font-weight: 900; transition: filter .2s ease, transform .2s ease;
+    }
+    .copy-btn:hover { filter: brightness(1.08); }
+    .copy-btn:active { transform: scale(.985); }
+    .copy-btn svg { width: 18px; height: 18px; }
+    .copy-btn.copied { border-color: rgba(117,200,154,.52); background: rgba(117,200,154,.15); color: #a8e6c1; }
+    .empty {
+      display: none; min-height: 330px; place-items: center; border: 1px dashed var(--line);
+      border-radius: var(--radius); background: var(--surface); text-align: center;
+    }
+    .empty svg { width: 34px; height: 34px; color: var(--gold); }
+    .empty h2 { margin: 12px 0 4px; font-size: 1.15rem; }
+    .empty p { margin: 0; color: var(--muted); }
+    .best-practices {
+      margin-top: 48px; border: 1px solid var(--line-strong); border-radius: 22px;
+      background: linear-gradient(135deg, rgba(216,170,73,.11), transparent 55%), var(--surface);
+      padding: 26px;
+    }
+    .best-practices h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; font-size: 1.25rem; }
+    .best-practices h2 svg { width: 22px; height: 22px; color: var(--gold); }
+    .practices-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .practice { border: 1px solid var(--line); border-radius: 13px; background: rgba(9,10,13,.56); padding: 14px; }
+    .practice-number {
+      display: grid; width: 27px; height: 27px; margin-bottom: 10px; place-items: center;
+      border-radius: 8px; background: var(--gold); color: #171208; font-size: .75rem; font-weight: 900;
+    }
+    .practice strong { display: block; margin-bottom: 4px; font-size: .88rem; }
+    .practice span { display: block; color: var(--muted); font-size: .79rem; line-height: 1.4; }
+    .footer {
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      border-top: 1px solid var(--line); margin-top: 34px; padding-top: 22px;
+      color: var(--faint); font-size: .78rem;
+    }
+    .footer strong { color: var(--muted); }
+    .toast {
+      position: fixed; z-index: 100; right: 22px; bottom: 22px; display: flex; min-height: 48px;
+      align-items: center; gap: 10px; border: 1px solid rgba(117,200,154,.35);
+      border-radius: 13px; background: #14251b; padding: 0 16px; color: #b9eccd;
+      font-weight: 800; box-shadow: var(--shadow); opacity: 0; transform: translateY(16px);
+      transition: .22s ease; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast svg { width: 19px; height: 19px; }
+    @media (max-width: 1180px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .practices-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 860px) {
+      :root { --sidebar: 0px; }
+      .sidebar { display: none; }
+      .mobile-bar {
+        position: sticky; z-index: 50; top: 0; display: flex; min-height: 66px;
+        align-items: center; justify-content: space-between; gap: 14px;
+        border-bottom: 1px solid var(--line); background: rgba(8,9,12,.94);
+        padding: 9px 18px; backdrop-filter: blur(18px);
+      }
+      .mobile-brand { display: flex; align-items: center; gap: 10px; font-weight: 850; }
+      .mobile-brand .brand-logo-wrap { width: 42px; height: 42px; flex-basis: 42px; border-radius: 12px; }
+      .mobile-brand .brand-logo { width: 35px; height: 35px; }
+      .mobile-pill {
+        border: 1px solid var(--line-strong); border-radius: 999px; background: var(--gold-soft);
+        padding: 5px 10px; color: var(--gold-2); font-size: .73rem; font-weight: 800;
+      }
+      .main { margin-left: 0; }
+      .content { width: min(100% - 32px, 760px); padding-top: 34px; }
+      .hero { grid-template-columns: 1fr; }
+      .summary { width: min(100%, 260px); }
+      .guide-content { grid-template-columns: 1fr; }
+      .toolbar { top: 66px; }
+      .cards { grid-template-columns: 1fr; }
+      .prompt-card { min-height: auto; }
+      .practices-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 540px) {
+      .content { width: min(100% - 22px, 520px); padding-top: 28px; }
+      h1 { font-size: 2.45rem; }
+      .hero p { font-size: .97rem; }
+      .summary { width: 100%; }
+      .toolbar { margin-inline: -4px; padding-inline: 4px; }
+      .prompt-card { border-radius: 16px; }
+      .card-top { padding-inline: 15px; }
+      .card-title, .prompt-box, .tip { margin-left: 15px; margin-right: 15px; }
+      .copy-btn { margin-left: 15px; margin-right: 15px; }
+      .practices-grid { grid-template-columns: 1fr; }
+      .best-practices { padding: 20px; }
+      .footer { align-items: flex-start; flex-direction: column; }
+      .toast { right: 11px; bottom: 11px; left: 11px; justify-content: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#biblioteca">Ir para a biblioteca</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="brand">
+        <div class="brand-logo-wrap">
+          <img class="brand-logo" src="logo_preto_transparente_3x.png" alt="Mais Contabilidade" onerror="this.onerror=null;this.src='https://avatars.githubusercontent.com/u/234486699?v=4';">
+        </div>
+        <div class="brand-copy">
+          <span class="brand-name">Mais</span>
+          <span class="brand-subtitle">Contabilidade</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <p class="nav-label">Área interna</p>
+        <a class="nav-item" href="#topo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg>
+          Início
+        </a>
+        <a class="nav-item active" href="#biblioteca" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M9 7h7M9 11h7"/></svg>
+          Prompts & Skills
+        </a>
+        <a class="nav-item" href="#boas-praticas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M8.5 14.5A7 7 0 1 1 15.5 14.5c-.9.7-1.5 1.3-1.5 2.5h-4c0-1.2-.6-1.8-1.5-2.5Z"/></svg>
+          Boas práticas
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="user-card">
+          <span class="avatar" aria-hidden="true">MC</span>
+          <span class="user-meta"><span class="user-name">Equipe Mais</span><span class="user-role">Uso interno</span></span>
+        </div>
+      </div>
+    </aside>
+
+    <header class="mobile-bar">
+      <div class="mobile-brand">
+        <span class="brand-logo-wrap">
+          <img class="brand-logo" src="logo_preto_transparente_3x.png" alt="" onerror="this.onerror=null;this.src='https://avatars.githubusercontent.com/u/234486699?v=4';">
+        </span>
+        <span>Mais Contabilidade</span>
+      </div>
+      <span class="mobile-pill">Prompts & Skills</span>
+    </header>
+
+    <main class="main" id="topo">
+      <div class="content">
+        <span class="eyebrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16"/><path d="M8 7h8"/></svg>
+          Biblioteca interna
+        </span>
+
+        <section class="hero" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">Biblioteca de <span>Prompts & Skills</span></h1>
+            <p>Recursos práticos para o dia a dia da Mais Contabilidade & Soluções Empresariais. Substitua tudo que estiver em <strong>[COLCHETES]</strong> pelos dados do seu caso.</p>
+          </div>
+          <div class="summary" aria-label="Resumo da biblioteca">
+            <div class="summary-item"><span class="summary-value" id="total-prompts">23</span><span class="summary-label">recursos</span></div>
+            <div class="summary-item"><span class="summary-value">4</span><span class="summary-label">áreas</span></div>
+          </div>
+        </section>
+
+        <details class="guide">
+          <summary>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+            Como usar — leia antes
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <div class="guide-content">
+            <div class="guide-step"><strong>1. Escolha o recurso</strong><p>Use a busca ou filtre pela área responsável pelo atendimento.</p></div>
+            <div class="guide-step"><strong>2. Complete os colchetes</strong><p>Troque cada campo em [COLCHETES] por informações reais e anonimizadas.</p></div>
+            <div class="guide-step"><strong>3. Revise antes de usar</strong><p>Confirme cálculos, prazos, convenções e legislação em fontes oficiais.</p></div>
+          </div>
+        </details>
+
+        <section id="biblioteca" aria-label="Biblioteca de prompts">
+          <div class="toolbar">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+              <label for="search" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Buscar na biblioteca</label>
+              <input id="search" type="search" autocomplete="off" placeholder="Buscar por tema, palavra ou atividade (ex.: rescisão, DRE, reforma...)">
+              <button class="clear-search" id="clear-search" type="button" aria-label="Limpar busca">×</button>
+            </div>
+            <div class="filter-row" role="group" aria-label="Filtrar por área">
+              <button class="filter active" type="button" data-category="all" aria-pressed="true">Todos <span class="count">23</span></button>
+              <button class="filter" type="button" data-category="Tributário" aria-pressed="false">Tributário <span class="count">6</span></button>
+              <button class="filter" type="button" data-category="Contábil" aria-pressed="false">Contábil <span class="count">5</span></button>
+              <button class="filter" type="button" data-category="Departamento Pessoal" aria-pressed="false">Departamento Pessoal <span class="count">5</span></button>
+              <button class="filter" type="button" data-category="Skills" aria-pressed="false">Skills <span class="count">7</span></button>
+            </div>
+          </div>
+
+          <div class="results-line" aria-live="polite"><span><strong id="visible-count">23</strong> recursos encontrados</span><span id="active-label">Todas as áreas</span></div>
+          <div class="cards" id="cards"></div>
+          <div class="empty" id="empty">
+            <div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/><path d="M8.5 11h5"/></svg>
+              <h2>Nenhum recurso encontrado</h2>
+              <p>Tente outra palavra ou selecione uma área diferente.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="best-practices" id="boas-praticas" aria-labelledby="practices-title">
+          <h2 id="practices-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4 6v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+            Boas práticas para uso de IA
+          </h2>
+          <div class="practices-grid">
+            <div class="practice"><span class="practice-number">01</span><strong>Anonimize</strong><span>Remova nome, CNPJ, CPF e outros dados sensíveis.</span></div>
+            <div class="practice"><span class="practice-number">02</span><strong>Revise sempre</strong><span>A IA pode errar alíquotas, prazos e interpretações.</span></div>
+            <div class="practice"><span class="practice-number">03</span><strong>Dê contexto</strong><span>Informe regime, atividade, período e objetivo da análise.</span></div>
+            <div class="practice"><span class="practice-number">04</span><strong>Refine</strong><span>Peça versões mais curtas, técnicas, didáticas ou em tabela.</span></div>
+            <div class="practice"><span class="practice-number">05</span><strong>Confira a fonte</strong><span>Solicite a base legal e valide em canais oficiais.</span></div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <span><strong>Mais Contabilidade & Soluções Empresariais</strong></span>
+          <span>Ferramenta interna • Conteúdo sujeito à revisão profissional</span>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+    Prompt copiado
+  </div>
+
+  <script>
+    const prompts = [
+      {id:"1.1",category:"Tributário",title:"Reforma Tributária explicada para o cliente",text:"Aja como especialista em reforma tributária brasileira (IBS, CBS e Imposto Seletivo). Explique, em linguagem simples e sem juridiquês, para um cliente do regime [SIMPLES NACIONAL / LUCRO PRESUMIDO / LUCRO REAL] do setor [SETOR], como a transição para IBS/CBS afeta o negócio dele entre 2026 e 2033. Traga: 1 exemplo numérico, os principais riscos e 3 ações práticas que ele deve tomar agora.",tip:"Use uma IA com acesso à web para confirmar alíquotas e prazos atualizados antes de enviar."},
+      {id:"1.2",category:"Tributário",title:"Comparar regimes tributários",text:"Você é consultor tributário. Com base nos dados abaixo, compare SIMPLES NACIONAL, LUCRO PRESUMIDO e LUCRO REAL e recomende o mais vantajoso, mostrando o cálculo de cada um e a economia estimada. Dados: faturamento anual [R$], folha [R$], margem de lucro [%], atividade [CNAE/DESCRIÇÃO], despesas dedutíveis [R$] e estado/município [LOCAL].",tip:"Peça o passo a passo em tabela e revise as alíquotas usadas no cálculo."},
+      {id:"1.3",category:"Tributário",title:"Resumo de legislação ou parecer",text:"Resuma o texto abaixo em até 10 tópicos objetivos para um contador. Destaque: o que muda, quem é afetado, vigência, prazos, obrigações práticas, riscos de descumprimento e providências recomendadas. Diferencie claramente o que está expresso no texto do que é interpretação. Texto: [COLAR LEI / IN / RESOLUÇÃO / PARECER].",tip:"Ao final, peça a indicação dos artigos que sustentam cada conclusão."},
+      {id:"1.4",category:"Tributário",title:"Planejamento tributário lícito",text:"Aja como planejador tributário. Para a empresa [DESCRIÇÃO DA ATIVIDADE], com faturamento [R$], regime atual [REGIME], folha [R$] e margem [X%], liste 5 oportunidades LÍCITAS de economia tributária. Para cada uma, informe: hipótese, embasamento, economia potencial, risco ou atenção, documentos necessários e passo a passo de implementação. Sinalize tudo que exige confirmação na legislação vigente.",tip:"Use o resultado como diagnóstico inicial, nunca como decisão sem validação técnica."},
+      {id:"1.5",category:"Tributário",title:"Responder dúvida fiscal do cliente",text:"Reescreva a resposta técnica abaixo como uma mensagem cordial e clara para um cliente leigo, mantendo a precisão e sem prometer o que depende de análise. Tema: [ASSUNTO]. Pergunta do cliente: [COLAR]. Resposta técnica: [COLAR]. Tom: profissional, acolhedor e objetivo. Termine informando a próxima ação, o responsável e o prazo, se esses dados forem fornecidos.",tip:"Confira se a versão final preservou todas as ressalvas da resposta técnica."},
+      {id:"1.6",category:"Tributário",title:"Conferência de apuração",text:"Atue como revisor tributário. Confira a apuração abaixo e identifique inconsistências, possíveis erros de alíquota, base de cálculo, retenção, crédito, segregação de receita ou enquadramento. Organize a resposta em: 1) divergências encontradas; 2) dados ausentes; 3) conferências obrigatórias; 4) risco; 5) checklist antes da transmissão. Período: [COMPETÊNCIA]. Regime: [REGIME]. Dados: [COLAR DADOS ANONIMIZADOS].",tip:"Não envie arquivos com dados pessoais ou empresariais sem anonimização."},
+      {id:"2.1",category:"Contábil",title:"Analisar DRE gerencial",text:"Aja como analista contábil e financeiro. Analise a DRE da empresa [SETOR] referente a [PERÍODO]. Compare com [PERÍODO ANTERIOR / ORÇAMENTO], calcule variações absolutas e percentuais e destaque: receita, margem bruta, despesas, EBITDA/resultado operacional e lucro líquido. Aponte 5 achados relevantes, possíveis causas e perguntas que precisam ser feitas ao cliente. Dados: [COLAR DRE ANONIMIZADA].",tip:"Informe se algum valor não fecha e separe fatos, hipóteses e recomendações."},
+      {id:"2.2",category:"Contábil",title:"Revisar conciliação contábil",text:"Revise a conciliação da conta [CONTA] no período [PERÍODO]. Compare saldo contábil [R$], saldo do relatório/extrato [R$] e itens pendentes [COLAR]. Classifique cada diferença por possível causa, materialidade e prioridade. Monte um checklist com documento necessário, responsável e ação corretiva. Não invente lançamentos ausentes.",tip:"Anexe somente dados anonimizados e confirme os saldos na origem."},
+      {id:"2.3",category:"Contábil",title:"Checklist de fechamento mensal",text:"Crie um checklist de fechamento contábil para uma empresa do setor [SETOR], regime [REGIME], com [NÚMERO] contas bancárias e [CARACTERÍSTICAS RELEVANTES]. Organize por etapa: documentos, importações, conciliações, provisões, depreciação, tributos, folha, revisão, relatórios e entrega. Para cada item, indique responsável, evidência esperada, prazo e critério de conclusão.",tip:"Adapte o checklist ao fluxo e ao plano de contas usados pelo escritório."},
+      {id:"2.4",category:"Contábil",title:"Rascunho de notas explicativas",text:"Com base apenas nas informações fornecidas, prepare um rascunho de notas explicativas para [EMPRESA / TIPO DE DEMONSTRAÇÃO] no exercício [ANO]. Use linguagem técnica clara e organize por tópicos. Marque com [INFORMAÇÃO PENDENTE] qualquer dado necessário que não esteja disponível. Não crie políticas, valores ou eventos. Informações: [COLAR DADOS ANONIMIZADOS].",tip:"O rascunho deve passar por revisão do contador responsável antes da emissão."},
+      {id:"2.5",category:"Contábil",title:"Diagnóstico de indicadores",text:"Calcule e interprete os indicadores abaixo para [EMPRESA/SETOR] em [PERÍODO]: liquidez corrente, liquidez seca, endividamento, margem líquida, giro do ativo e prazo médio quando houver dados. Mostre fórmula, cálculo, resultado e interpretação em tabela. Compare com [PERÍODO ANTERIOR / META] e destaque limitações. Dados: [COLAR BALANÇO E DRE ANONIMIZADOS].",tip:"Não use benchmark de mercado sem indicar fonte e período da comparação."},
+      {id:"3.1",category:"Departamento Pessoal",title:"Checklist de admissão",text:"Crie um checklist de admissão para o cargo [CARGO], início em [DATA], regime [TIPO DE CONTRATO] e empresa enquadrada em [CCT / SINDICATO]. Separe em: documentos do empregado, dados cadastrais, exame admissional, contrato, benefícios, eSocial, integrações e conferência final. Destaque prazos e dependências sem inventar regras da convenção coletiva.",tip:"Confirme a CCT aplicável, o exame admissional e os prazos vigentes do eSocial."},
+      {id:"3.2",category:"Departamento Pessoal",title:"Planejar férias sem perder prazos",text:"Analise o planejamento de férias abaixo. Para cada empregado, verifique período aquisitivo, período concessivo, data pretendida, quantidade de dias, abono e possíveis conflitos. Monte uma tabela com status, prazo limite, risco e próxima ação. Dados: [COLAR DADOS ANONIMIZADOS]. Considere a legislação e a CCT informadas: [COLAR REGRAS APLICÁVEIS].",tip:"Use datas completas e valide regras especiais previstas na convenção."},
+      {id:"3.3",category:"Departamento Pessoal",title:"Simular e revisar rescisão",text:"Atue como revisor de rescisão trabalhista. Com base no motivo [MOTIVO], admissão [DATA], desligamento [DATA], salário [R$], férias [DADOS], 13º [DADOS], aviso [TRABALHADO/INDENIZADO] e demais verbas [COLAR], apresente uma simulação item a item. Mostre bases, fórmulas, descontos, FGTS/multa quando aplicável, dados ausentes e checklist de conferência. Não assuma regra de CCT não fornecida.",tip:"A simulação é apoio à conferência; valide rubricas, eventos e convenção no sistema."},
+      {id:"3.4",category:"Departamento Pessoal",title:"Interpretar cláusula de convenção coletiva",text:"Analise a cláusula de convenção coletiva abaixo para aplicação prática no Departamento Pessoal. Responda: 1) quem está abrangido; 2) obrigação; 3) exceções; 4) datas e prazos; 5) documentos/evidências; 6) impacto na folha ou processo; 7) dúvidas que exigem validação jurídica/sindical. Cite somente o texto fornecido. Cláusula: [COLAR].",tip:"Informe também a vigência e a base territorial da convenção."},
+      {id:"3.5",category:"Departamento Pessoal",title:"Explicar a folha ao cliente",text:"Transforme os dados técnicos da folha abaixo em uma explicação curta para o cliente. Destaque o que mudou em relação ao mês anterior, principais proventos e descontos, encargos, eventos extraordinários e providências do cliente. Não exponha dados individuais desnecessários. Competência: [MÊS/ANO]. Comparativo: [COLAR]. Ocorrências: [COLAR].",tip:"Peça uma versão para WhatsApp e outra para e-mail, se necessário."},
+      {id:"S1",category:"Skills",title:"Pesquisa com fontes oficiais",text:"Pesquise o tema [ASSUNTO] usando prioritariamente fontes oficiais brasileiras e materiais vigentes na data de hoje. Para cada conclusão, informe fonte, órgão, data de publicação/atualização e link direto. Separe: regra confirmada, interpretação, ponto controverso e informação ainda não localizada. Não use blog como base principal quando houver fonte oficial.",tip:"Ideal para confirmar mudanças antes de orientar a equipe ou o cliente."},
+      {id:"S2",category:"Skills",title:"Analisador de planilhas",text:"Analise a planilha [DESCREVER/ANEXAR] com foco em [OBJETIVO]. Primeiro valide colunas, período, tipos de dados, duplicidades, vazios e totais. Depois apresente: resumo executivo, inconsistências, cálculos relevantes, padrões, exceções e recomendações. Não altere os dados originais. Liste todas as premissas adotadas.",tip:"Informe quais colunas são identificadores e quais valores precisam fechar."},
+      {id:"S3",category:"Skills",title:"Comunicação executiva",text:"Converta o conteúdo abaixo em uma comunicação executiva da Mais Contabilidade. Estrutura: assunto direto, contexto em até 2 linhas, decisão ou orientação, ações com responsável e prazo, e fechamento cordial. Preserve números, ressalvas e obrigações. Público: [CLIENTE / GESTOR / EQUIPE]. Canal: [E-MAIL / WHATSAPP / RELATÓRIO]. Conteúdo: [COLAR].",tip:"Escolha o canal para ajustar tamanho, formalidade e nível de detalhe."},
+      {id:"S4",category:"Skills",title:"Criar procedimento interno",text:"Transforme a atividade [DESCREVER] em um procedimento operacional padrão para a equipe da Mais. Organize em: objetivo, quando executar, responsável, pré-requisitos, passo a passo numerado, pontos de conferência, evidências, exceções, escalonamento e definição de concluído. Use apenas ferramentas e regras informadas: [COLAR].",tip:"Teste o procedimento com alguém que ainda não executa a rotina."},
+      {id:"S5",category:"Skills",title:"Preparar reunião com cliente",text:"Prepare uma pauta para reunião com o cliente [PERFIL/SETOR] sobre [TEMA]. Considere o histórico [RESUMO], dados [COLAR] e objetivo [DECISÃO DESEJADA]. Entregue: abertura, 5 perguntas-chave, pontos a apresentar, riscos, decisões necessárias, documentos pendentes e próximos passos. Inclua uma versão de ata para preencher durante a reunião.",tip:"Defina previamente qual decisão ou compromisso deve sair da reunião."},
+      {id:"S6",category:"Skills",title:"Mapa de riscos do processo",text:"Mapeie os riscos do processo [PROCESSO] da Mais Contabilidade. Para cada risco, indique causa, evento, consequência, probabilidade, impacto, controle atual, evidência, responsável e ação de melhoria. Classifique em crítico, alto, médio ou baixo e monte uma ordem de tratamento. Contexto e controles existentes: [COLAR].",tip:"Valide a classificação com quem executa e quem revisa o processo."},
+      {id:"S7",category:"Skills",title:"Revisor de qualidade da resposta",text:"Revise a resposta abaixo antes do envio ao cliente. Verifique: aderência à pergunta, clareza, precisão, cálculos, datas, base legal, tom, dados sensíveis, promessas indevidas, contradições e próximos passos. Classifique cada ponto como OK, AJUSTAR ou VALIDAR. Depois apresente uma versão final corrigida sem inventar informações. Pergunta: [COLAR]. Resposta: [COLAR].",tip:"Use como última barreira de qualidade, não como substituto da revisão profissional."}
+    ];
+
+    const cards = document.getElementById("cards");
+    const search = document.getElementById("search");
+    const clearSearch = document.getElementById("clear-search");
+    const filters = Array.from(document.querySelectorAll(".filter"));
+    const visibleCount = document.getElementById("visible-count");
+    const activeLabel = document.getElementById("active-label");
+    const empty = document.getElementById("empty");
+    const toast = document.getElementById("toast");
+    let activeCategory = "all";
+    let toastTimer;
+
+    const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg>';
+    const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';
+    const tipIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M8.5 14.5A7 7 0 1 1 15.5 14.5c-.9.7-1.5 1.3-1.5 2.5h-4c0-1.2-.6-1.8-1.5-2.5Z"/></svg>';
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, function(character) {
+        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[character];
+      });
+    }
+
+    function normalize(value) {
+      return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    function highlighted(value, query) {
+      if (!query) return escapeHtml(value);
+      const escaped = query.replace(/[.*+?^$(){}|[\]\\]/g, "\\$&");
+      const pieces = value.split(new RegExp("(" + escaped + ")", "ig"));
+      return pieces.map(function(piece) {
+        return normalize(piece) === normalize(query) ? "<mark>" + escapeHtml(piece) + "</mark>" : escapeHtml(piece);
+      }).join("");
+    }
+
+    function render() {
+      const rawQuery = search.value.trim();
+      const query = normalize(rawQuery);
+      const filtered = prompts.filter(function(item) {
+        const matchesCategory = activeCategory === "all" || item.category === activeCategory;
+        const haystack = normalize(item.id + " " + item.category + " " + item.title + " " + item.text + " " + item.tip);
+        return matchesCategory && (!query || haystack.includes(query));
+      });
+
+      cards.innerHTML = filtered.map(function(item) {
+        return '<article class="prompt-card">' +
+          '<div class="card-top"><span class="code-badge">' + item.id + '</span><span class="area-label">' + escapeHtml(item.category) + '</span></div>' +
+          '<h2 class="card-title">' + highlighted(item.title, rawQuery) + '</h2>' +
+          '<div class="prompt-box">' + highlighted(item.text, rawQuery) + '</div>' +
+          '<div class="tip">' + tipIcon + '<span><strong>Como usar:</strong> ' + highlighted(item.tip, rawQuery) + '</span></div>' +
+          '<button class="copy-btn" type="button" data-id="' + item.id + '" aria-label="Copiar prompt ' + item.id + '">' + copyIcon + '<span>Copiar prompt</span></button>' +
+          '</article>';
+      }).join("");
+
+      visibleCount.textContent = filtered.length;
+      activeLabel.textContent = activeCategory === "all" ? "Todas as áreas" : activeCategory;
+      empty.style.display = filtered.length ? "none" : "grid";
+      cards.style.display = filtered.length ? "grid" : "none";
+      clearSearch.style.display = search.value ? "grid" : "none";
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+    }
+
+    cards.addEventListener("click", async function(event) {
+      const button = event.target.closest(".copy-btn");
+      if (!button) return;
+      const item = prompts.find(function(prompt) { return prompt.id === button.dataset.id; });
+      if (!item) return;
+      try {
+        await copyText(item.text);
+        button.classList.add("copied");
+        button.innerHTML = checkIcon + "<span>Copiado</span>";
+        clearTimeout(toastTimer);
+        toast.classList.add("show");
+        toastTimer = setTimeout(function() { toast.classList.remove("show"); }, 2200);
+        setTimeout(function() {
+          button.classList.remove("copied");
+          button.innerHTML = copyIcon + "<span>Copiar prompt</span>";
+        }, 1800);
+      } catch (error) {
+        toast.innerHTML = "<span>Não foi possível copiar. Selecione o texto manualmente.</span>";
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function() { toast.classList.remove("show"); }, 2800);
+      }
+    });
+
+    filters.forEach(function(filter) {
+      filter.addEventListener("click", function() {
+        activeCategory = filter.dataset.category;
+        filters.forEach(function(item) {
+          const isActive = item === filter;
+          item.classList.toggle("active", isActive);
+          item.setAttribute("aria-pressed", String(isActive));
+        });
+        render();
+      });
+    });
+
+    search.addEventListener("input", render);
+    clearSearch.addEventListener("click", function() { search.value = ""; search.focus(); render(); });
+    document.addEventListener("keydown", function(event) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        search.focus();
+      }
+      if (event.key === "Escape" && document.activeElement === search && search.value) {
+        search.value = "";
+        render();
+      }
+    });
+    document.getElementById("total-prompts").textContent = prompts.length;
+    render();
+  </script>
+</body>
+</html>
